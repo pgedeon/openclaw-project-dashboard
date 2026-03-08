@@ -4,6 +4,13 @@
 
 Operations-first dashboard for OpenClaw. It gives you hierarchical boards, OpenClaw-aware task composition, agent queue visibility, audit trails, and a thin bridge back into the OpenClaw runtime so the dashboard is not just a passive UI.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-overview.png" alt="Desktop overview of the OpenClaw Project Dashboard" width="78%" />
+  <img src="docs/screenshots/dashboard-mobile.png" alt="Mobile responsive view of the OpenClaw Project Dashboard" width="18%" />
+</p>
+
 ## What This RC Includes
 
 - Folder-style project hierarchy with parent and child boards
