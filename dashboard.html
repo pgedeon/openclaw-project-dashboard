@@ -133,6 +133,43 @@
             font-size: 1rem;
         }
 
+        .page-nav {
+            display: inline-flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .page-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--surface-2) 78%, transparent);
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+        }
+
+        .page-nav a:hover {
+            transform: translateY(-1px);
+            color: var(--text);
+            border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+        }
+
+        .page-nav a[aria-current="page"] {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-2) 40%, var(--accent)));
+            border-color: transparent;
+            box-shadow: var(--shadow-soft);
+        }
+
         .theme-toggle {
             background: var(--surface-2);
             border: 1px solid var(--border);
@@ -1971,6 +2008,10 @@
             <div class="title-block">
                 <h1>Project Dashboard</h1>
                 <p>Track deliverables, keep momentum, and celebrate progress.</p>
+                <nav class="page-nav" aria-label="Dashboard pages">
+                    <a href="/" aria-current="page">Tasks</a>
+                    <a href="/agents">Agents</a>
+                </nav>
             </div>
             <div class="header-actions">
                 <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">

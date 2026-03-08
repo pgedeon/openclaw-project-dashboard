@@ -63,6 +63,7 @@ const OPENCLAW_CONFIG_FILE = process.env.OPENCLAW_CONFIG_FILE
   : path.resolve(WORKSPACE, '..', 'openclaw.json');
 const OPENCLAW_BIN = process.env.OPENCLAW_BIN || 'openclaw';
 const DASHBOARD_AGENT_BRIDGE = path.join(WORKSPACE, 'scripts', 'dashboard_agent_bridge.py');
+const AGENT_HEARTBEAT_STALE_MS = 20 * 60 * 1000;
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -178,6 +179,172 @@ function buildTaskComposerOptions() {
     },
     agents,
     models
+  };
+}
+
+function normalizeMetadataObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value
+    : {};
+}
+
+function isAgentHeartbeatFresh(statusRow) {
+  if (!statusRow?.last_seen_at) return false;
+  const lastSeenAt = new Date(statusRow.last_seen_at).getTime();
+  if (!Number.isFinite(lastSeenAt)) return false;
+  return Date.now() - lastSeenAt <= AGENT_HEARTBEAT_STALE_MS;
+}
+
+function buildRuntimeTaskFallback(metadata) {
+  if (!metadata.current_task_id && !metadata.current_task_title && !metadata.current_task_status) {
+    return null;
+  }
+  return {
+    id: metadata.current_task_id || null,
+    title: metadata.current_task_title || 'OpenClaw task in progress',
+    status: metadata.current_task_status || null,
+    priority: null,
+    project_id: null,
+    project_name: null,
+    due_date: null,
+    start_date: null,
+    preferred_model: null
+  };
+}
+
+function deriveAgentPresence(statusRow, snapshot = {}) {
+  const metadata = normalizeMetadataObject(statusRow?.metadata);
+  const counts = snapshot?.counts || {};
+  const isFresh = isAgentHeartbeatFresh(statusRow);
+  const queueActive = Number(metadata.queue_active_count) || Number(counts.in_progress) || 0;
+  const queueQueued =
+    (Number(metadata.queue_ready_count) || 0) +
+    (Number(counts.ready) || 0) +
+    (Number(counts.backlog) || 0) +
+    (Number(counts.review) || 0);
+  const hasCurrentTask = Boolean(
+    snapshot?.currentTask ||
+    metadata.current_task_id ||
+    metadata.current_task_title ||
+    metadata.current_activity
+  );
+
+  if (!isFresh || statusRow?.status === 'offline') {
+    return 'offline';
+  }
+  if (queueActive > 0 || hasCurrentTask || statusRow?.status === 'working' || statusRow?.status === 'busy') {
+    return 'working';
+  }
+  if (queueQueued > 0 || Number(counts.blocked) > 0) {
+    return 'queued';
+  }
+  return 'idle';
+}
+
+function buildAgentOverview(agent, statusRow = null, snapshot = {}) {
+  const metadata = normalizeMetadataObject(statusRow?.metadata);
+  const counts = {
+    total: Number(snapshot?.counts?.total) || 0,
+    backlog: Number(snapshot?.counts?.backlog) || 0,
+    ready: Number(snapshot?.counts?.ready) || 0,
+    in_progress: Number(snapshot?.counts?.in_progress) || 0,
+    blocked: Number(snapshot?.counts?.blocked) || 0,
+    review: Number(snapshot?.counts?.review) || 0,
+    completed: Number(snapshot?.counts?.completed) || 0,
+    archived: Number(snapshot?.counts?.archived) || 0,
+    overdue: Number(snapshot?.counts?.overdue) || 0
+  };
+  const currentTask = snapshot?.currentTask || buildRuntimeTaskFallback(metadata);
+  const nextTask = snapshot?.nextTask || snapshot?.queue?.find((task) => task.id !== currentTask?.id) || null;
+  const presence = deriveAgentPresence(statusRow, snapshot);
+
+  return {
+    id: agent.id,
+    name: agent.name,
+    workspace: agent.workspace || null,
+    default: Boolean(agent.default),
+    defaultModel: agent.defaultModel || null,
+    presence,
+    online: presence !== 'offline',
+    status: statusRow?.status || 'offline',
+    lastSeenAt: statusRow?.last_seen_at || null,
+    stale: !isAgentHeartbeatFresh(statusRow),
+    currentActivity: metadata.current_activity || metadata.last_summary || null,
+    queueSummary: {
+      total: counts.total,
+      ready: counts.ready,
+      backlog: counts.backlog,
+      inProgress: counts.in_progress,
+      blocked: counts.blocked,
+      review: counts.review,
+      completed: counts.completed,
+      overdue: counts.overdue
+    },
+    runtime: {
+      source: metadata.source || null,
+      currentTaskId: metadata.current_task_id || currentTask?.id || null,
+      currentTaskTitle: metadata.current_task_title || currentTask?.title || null,
+      currentTaskStatus: metadata.current_task_status || currentTask?.status || null,
+      currentActivity: metadata.current_activity || null,
+      queueReadyCount: Number(metadata.queue_ready_count) || counts.ready,
+      queueActiveCount: Number(metadata.queue_active_count) || counts.in_progress,
+      lastSyncedAt: metadata.last_synced_at || null
+    },
+    currentTask,
+    nextTask,
+    queue: Array.isArray(snapshot?.queue) ? snapshot.queue : []
+  };
+}
+
+async function buildAgentsOverviewPayload(queueLimit = 5) {
+  const agents = buildConfiguredAgentsCatalog();
+  const agentIds = agents.map((agent) => agent.id);
+
+  const [statuses, snapshots] = await Promise.all([
+    asanaStorage.listAgentStatuses(),
+    asanaStorage.getAgentWorkspaceOverview(agentIds, { queueLimit })
+  ]);
+
+  const statusByAgent = new Map(
+    statuses.map((statusRow) => [statusRow.agent_name, statusRow])
+  );
+
+  const items = agents.map((agent) => buildAgentOverview(
+    agent,
+    statusByAgent.get(agent.id) || null,
+    snapshots[agent.id] || null
+  ));
+
+  const summary = items.reduce((accumulator, agent) => {
+    accumulator.totalAgents += 1;
+    accumulator.readyTasks += Number(agent.queueSummary.ready) || 0;
+    accumulator.activeTasks += Number(agent.queueSummary.inProgress) || 0;
+    accumulator.blockedTasks += Number(agent.queueSummary.blocked) || 0;
+    accumulator.overdueTasks += Number(agent.queueSummary.overdue) || 0;
+
+    if (agent.presence === 'working') accumulator.working += 1;
+    if (agent.presence === 'queued') accumulator.queued += 1;
+    if (agent.presence === 'idle') accumulator.idle += 1;
+    if (agent.online) accumulator.online += 1;
+    if (agent.presence === 'offline') accumulator.offline += 1;
+    return accumulator;
+  }, {
+    totalAgents: 0,
+    online: 0,
+    working: 0,
+    queued: 0,
+    idle: 0,
+    offline: 0,
+    readyTasks: 0,
+    activeTasks: 0,
+    blockedTasks: 0,
+    overdueTasks: 0
+  });
+
+  return {
+    generatedAt: new Date().toISOString(),
+    summary,
+    agents: items
   };
 }
 
@@ -1333,6 +1500,23 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // GET /api/agents/overview
+    if (url === '/api/agents/overview' && method === 'GET') {
+      if (!asanaStorage) {
+        sendJSON(res, 503, { error: 'Asana storage not initialized' });
+        return;
+      }
+      try {
+        const query = new URL(req.url, `http://${req.headers.host}`).searchParams;
+        const queueLimit = Math.min(Math.max(parseInt(query.get('queue_limit'), 10) || 5, 1), 12);
+        const payload = await buildAgentsOverviewPayload(queueLimit);
+        sendJSON(res, 200, payload);
+      } catch (err) {
+        sendJSON(res, 500, { error: err.message });
+      }
+      return;
+    }
+
     // POST /api/tasks/:id/retry
     if (url.startsWith('/api/tasks/') && url.endsWith('/retry') && method === 'POST') {
       if (!asanaStorage) {
@@ -1396,6 +1580,11 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (url === '/agents' || url === '/agents/') {
+      sendFile(res, 'dashboard/agents.html');
+      return;
+    }
+
     // Serve other static files from the dashboard subdirectory
     // (all frontend assets live under dashboard/: src/, index.html, etc.)
     sendFile(res, path.join('dashboard', url.slice(1)));
@@ -1409,6 +1598,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', async () => {
   console.log(`📋 Task Server running at http://0.0.0.0:${PORT}`);
   console.log(`   Dashboard: http://localhost:${PORT}/`);
+  console.log(`   Agents: http://localhost:${PORT}/agents`);
   console.log(`   Legacy API: http://localhost:${PORT}/api/tasks (markdown)`);
   console.log(`   New API: http://localhost:${PORT}/api/projects`);
   console.log(`   New API: http://localhost:${PORT}/api/tasks/all`);

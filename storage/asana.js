@@ -33,6 +33,47 @@ const FIXTURE_PROJECT_PATTERNS = [
   /\bseed\b/i
 ];
 
+function normalizeTaskMetadata(metadata) {
+  return metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+    ? metadata
+    : {};
+}
+
+function extractPreferredModelFromMetadata(metadata) {
+  const normalized = normalizeTaskMetadata(metadata);
+  const openclawMeta = normalized.openclaw && typeof normalized.openclaw === 'object' && !Array.isArray(normalized.openclaw)
+    ? normalized.openclaw
+    : normalized;
+
+  if (typeof openclawMeta.preferred_model === 'string' && openclawMeta.preferred_model.trim()) {
+    return openclawMeta.preferred_model.trim();
+  }
+  if (typeof openclawMeta.model === 'string' && openclawMeta.model.trim()) {
+    return openclawMeta.model.trim();
+  }
+  return null;
+}
+
+function summarizeAgentTaskRow(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    status: row.status,
+    priority: row.priority,
+    due_date: row.due_date,
+    start_date: row.start_date,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    project_id: row.project_id,
+    project_name: row.project_name,
+    parent_task_id: row.parent_task_id || null,
+    execution_locked_by: row.execution_locked_by || null,
+    recurrence_rule: row.recurrence_rule || null,
+    preferred_model: extractPreferredModelFromMetadata(row.metadata)
+  };
+}
+
 class AsanaStorage {
   constructor(config = {}) {
     this.pool = new Pool({
@@ -1590,6 +1631,147 @@ class AsanaStorage {
         totalPages: Math.ceil(total / limit)
       }
     };
+  }
+
+  async getAgentWorkspaceOverview(agentNames = [], options = {}) {
+    const normalizedAgentNames = Array.from(new Set(
+      (Array.isArray(agentNames) ? agentNames : [])
+        .map((agentName) => (typeof agentName === 'string' ? agentName.trim() : ''))
+        .filter(Boolean)
+    ));
+
+    if (normalizedAgentNames.length === 0) {
+      return {};
+    }
+
+    const queueLimit = Math.min(Math.max(parseInt(options.queueLimit, 10) || 4, 1), 12);
+    const queueStatuses = ['in_progress', 'ready', 'blocked', 'review', 'backlog'];
+    const terminalStatuses = ['completed', 'archived'];
+    const baseCounts = {
+      total: 0,
+      backlog: 0,
+      ready: 0,
+      in_progress: 0,
+      blocked: 0,
+      review: 0,
+      completed: 0,
+      archived: 0,
+      overdue: 0
+    };
+    const overview = Object.fromEntries(normalizedAgentNames.map((agentName) => [
+      agentName,
+      {
+        counts: { ...baseCounts },
+        queue: [],
+        currentTask: null,
+        nextTask: null
+      }
+    ]));
+
+    const countsResult = await this.pool.query(
+      `
+        SELECT owner, status, COUNT(*)::int AS count
+        FROM tasks
+        WHERE owner = ANY($1)
+          AND deleted_at IS NULL
+          AND archived_at IS NULL
+        GROUP BY owner, status
+      `,
+      [normalizedAgentNames]
+    );
+
+    countsResult.rows.forEach((row) => {
+      const snapshot = overview[row.owner];
+      if (!snapshot) return;
+      const statusKey = typeof row.status === 'string' ? row.status : '';
+      const count = Number.parseInt(row.count, 10) || 0;
+      snapshot.counts.total += count;
+      if (Object.prototype.hasOwnProperty.call(snapshot.counts, statusKey)) {
+        snapshot.counts[statusKey] += count;
+      }
+    });
+
+    const overdueResult = await this.pool.query(
+      `
+        SELECT owner, COUNT(*)::int AS count
+        FROM tasks
+        WHERE owner = ANY($1)
+          AND deleted_at IS NULL
+          AND archived_at IS NULL
+          AND due_date IS NOT NULL
+          AND due_date < NOW()
+          AND status <> ALL($2::text[])
+        GROUP BY owner
+      `,
+      [normalizedAgentNames, terminalStatuses]
+    );
+
+    overdueResult.rows.forEach((row) => {
+      const snapshot = overview[row.owner];
+      if (!snapshot) return;
+      snapshot.counts.overdue = Number.parseInt(row.count, 10) || 0;
+    });
+
+    const queueResult = await this.pool.query(
+      `
+        WITH ranked AS (
+          SELECT
+            t.*,
+            p.name AS project_name,
+            ROW_NUMBER() OVER (
+              PARTITION BY t.owner
+              ORDER BY
+                CASE t.status
+                  WHEN 'in_progress' THEN 0
+                  WHEN 'ready' THEN 1
+                  WHEN 'blocked' THEN 2
+                  WHEN 'review' THEN 3
+                  WHEN 'backlog' THEN 4
+                  ELSE 5
+                END,
+                CASE t.priority
+                  WHEN 'critical' THEN 0
+                  WHEN 'high' THEN 1
+                  WHEN 'medium' THEN 2
+                  WHEN 'low' THEN 3
+                  ELSE 4
+                END,
+                t.due_date ASC NULLS LAST,
+                t.created_at ASC
+            ) AS row_num
+          FROM tasks t
+          JOIN projects p ON p.id = t.project_id
+          WHERE t.owner = ANY($1)
+            AND t.deleted_at IS NULL
+            AND t.archived_at IS NULL
+            AND t.status = ANY($2::text[])
+        )
+        SELECT *
+        FROM ranked
+        WHERE row_num <= $3
+        ORDER BY owner, row_num
+      `,
+      [normalizedAgentNames, queueStatuses, queueLimit]
+    );
+
+    queueResult.rows.forEach((row) => {
+      const snapshot = overview[row.owner];
+      if (!snapshot) return;
+      const task = summarizeAgentTaskRow(row);
+      snapshot.queue.push(task);
+      if (!snapshot.currentTask && task.status === 'in_progress') {
+        snapshot.currentTask = task;
+      }
+    });
+
+    Object.values(overview).forEach((snapshot) => {
+      if (!snapshot.currentTask) {
+        snapshot.currentTask = snapshot.queue.find((task) => task.status === 'in_progress') || null;
+      }
+      snapshot.nextTask = snapshot.queue.find((task) => task.status !== 'in_progress') || null;
+    });
+
+    return overview;
   }
 
   // ============================================

@@ -1,21 +1,21 @@
-# Release Candidate v2.0.0-rc.1 – 2026-03-08
+# Release Candidate v2.0.0-rc.2 – 2026-03-08
 
 ## Summary
 
-This release candidate turns the dashboard into a publishable OpenClaw project instead of a workspace-only implementation. It packages the current UI and backend as `openclaw-project-dashboard`, adds install documentation, and includes the recent hierarchy, task composer, and OpenClaw bridge improvements.
+This release candidate advances the packaged dashboard beyond the initial standalone export. It adds the new `/agents` workspace, carries over the latest project/task UX improvements, and updates the package metadata so the release artifacts include the full multi-page dashboard.
 
 ## Highlights
 
-- Folder-style board tree in the project workspace panel
-- Project management actions directly in the project context area
+- Dedicated `/agents` workspace with live agent floor view, focus panel, and presence filters
+- Improved project workspace panel and richer task/task-edit UX
 - Task composer with agent and preferred-model assignment
 - OpenClaw-aware `/api/task-options` and agent heartbeat/status surfaces
 - Better filter correctness, subtask visibility, and stats consistency
-- Runtime path configuration through `OPENCLAW_WORKSPACE` and `OPENCLAW_CONFIG_FILE`
+- Package contents updated to include `agents.html`, `src/agents-page.mjs`, and `sw.js`
 
 ## Release Artifacts
 
-- Git tag: `v2.0.0-rc.1`
+- Git tag: `v2.0.0-rc.2`
 - Default branch target: `main`
 - Repository target: `github.com/pgedeon/openclaw-project-dashboard`
 
@@ -23,6 +23,7 @@ This release candidate turns the dashboard into a publishable OpenClaw project i
 
 - `node --check task-server.js`
 - `node --check src/dashboard-integration-optimized.mjs`
+- `node --check src/agents-page.mjs`
 - `bash -n scripts/dashboard-health.sh`
 - `bash -n scripts/restart-task-server.sh`
 - `node scripts/dashboard-validation.js`

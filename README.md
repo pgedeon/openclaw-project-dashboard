@@ -1,6 +1,6 @@
 # OpenClaw Project Dashboard
 
-`2.0.0-rc.1`
+`2.0.0-rc.2`
 
 Operations-first dashboard for OpenClaw. It gives you hierarchical boards, OpenClaw-aware task composition, agent queue visibility, audit trails, and a thin bridge back into the OpenClaw runtime so the dashboard is not just a passive UI.
 
@@ -16,6 +16,7 @@ Operations-first dashboard for OpenClaw. It gives you hierarchical boards, OpenC
 - Folder-style project hierarchy with parent and child boards
 - Project context manager with create, edit, archive, and child-board actions
 - Rich task composer with agent assignment, preferred LLM model, priority, recurrence, start date, and due date
+- Dedicated `/agents` workspace with live OpenClaw agent status, queue presence, and per-agent detail rail
 - OpenClaw bridge endpoints so agents can watch for runnable work and write status back into the dashboard
 - Improved list filtering, subtask expansion, and live stats consistency
 - Release-ready packaging, install docs, and environment-driven runtime paths
@@ -44,6 +45,7 @@ When the repo is installed at `~/.openclaw/workspace/dashboard`, the server auto
 
 The dashboard is served by `task-server.js` and stores data in PostgreSQL by default.
 
+- Agents page: `agents.html`
 - UI entry: `dashboard.html`
 - API server: `task-server.js`
 - Storage layer: `storage/asana.js`
@@ -120,7 +122,7 @@ DASHBOARD_API_BASE=http://localhost:3887 node scripts/dashboard-validation.js
 
 ## Release Candidate Notes
 
-This repository snapshot is intended to become the `main` branch of `github.com/pgedeon/openclaw-project-dashboard` and is tagged as `v2.0.0-rc.1`.
+This repository snapshot targets `github.com/pgedeon/openclaw-project-dashboard` and is tagged as `v2.0.0-rc.2`.
 
 Release notes: [RELEASE.md](RELEASE.md)  
 Change history: [CHANGELOG.md](CHANGELOG.md)

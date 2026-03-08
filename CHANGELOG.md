@@ -60,6 +60,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.2] – 2026-03-08
+
+### Added
+- Dedicated `/agents` page inspired by an operations floor layout, with grouped agent cards, a live focus panel, search, and presence filters
+- Standalone packaging now includes `agents.html`, `src/agents-page.mjs`, and `sw.js`
+
+### Changed
+- Project dashboard layout tightened around the project workspace, task composer, and inline task editing flows
+- Agent page card layout, text hierarchy, and overflow handling were reworked for better readability on desktop and narrow screens
+- Release metadata now targets `2.0.0-rc.2`
+
+### Fixed
+- Filter/list mismatches when parent tasks and subtasks were counted differently
+- Missing stats DOM bindings that caused `updateStats()` runtime failures
+- Category filter state getting out of sync with the currently loaded project
+- Agent card clipping and hidden text on the new `/agents` page
+
 ## [2.0.0-rc.1] – 2026-03-08
 
 ### Added
