@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f4f1ff;
+            --bg-2: #fff4e6;
+            --surface: #ffffff;
+            --surface-2: #f8f8ff;
+            --text: #1f1f2b;
+            --muted: #6b7280;
+            --accent: #5c6bf2;
+            --accent-2: #f59e0b;
+            --accent-3: #ef4444;
+            --success: #20b26c;
+            --border: rgba(36, 37, 49, 0.12);
+            --shadow: 0 12px 40px rgba(27, 30, 49, 0.12);
+            --shadow-soft: 0 6px 18px rgba(27, 30, 49, 0.08);
+            --ring: 0 0 0 3px rgba(92, 107, 242, 0.18);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #0c0f1e;
+            --bg-2: #1a1031;
+            --surface: #14182c;
+            --surface-2: #1c2138;
+            --text: #f5f5ff;
+            --muted: #a8afc2;
+            --accent: #8b9bff;
+            --accent-2: #f4b84a;
+            --accent-3: #ff7b8b;
+            --success: #2ed984;
+            --border: rgba(255, 255, 255, 0.12);
+            --shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+            --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.35);
+            --ring: 0 0 0 3px rgba(139, 155, 255, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: radial-gradient(circle at top left, var(--bg-2), var(--bg)) fixed;
+            min-height: 100vh;
+            padding: 28px 20px 60px;
+            color: var(--text);
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            width: 380px;
+            height: 380px;
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+            opacity: 0.12;
+            z-index: -1;
+            transition: background 0.4s ease;
+        }
+
+        body::before {
+            top: -120px;
+            right: -140px;
+            background: radial-gradient(circle at 30% 30%, var(--accent), transparent 70%);
+        }
+
+        body::after {
+            bottom: -160px;
+            left: -120px;
+            background: radial-gradient(circle at 40% 40%, var(--accent-2), transparent 70%);
+        }
+
+        a.skip-link {
+            position: absolute;
+            left: -999px;
+            top: 8px;
+            background: var(--surface);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-soft);
+            z-index: 10;
+        }
+
+        a.skip-link:focus {
+            left: 20px;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: start;
+            gap: 18px 24px;
+            margin-bottom: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-block h1 {
+            font-family: 'Fraunces', serif;
+            font-size: clamp(2.2rem, 2vw + 2rem, 3rem);
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            max-width: 6ch;
+        }
+
+        .title-block p {
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .page-nav {
+            display: inline-flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .page-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--surface-2) 78%, transparent);
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+        }
+
+        .page-nav a:hover {
+            transform: translateY(-1px);
+            color: var(--text);
+            border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+        }
+
+        .page-nav a[aria-current="page"] {
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-2) 40%, var(--accent)));
+            border-color: transparent;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .theme-toggle {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .project-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: min(100%, 520px);
+        }
+
+        .project-selector label {
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        .project-selector select {
+            flex: 1 1 320px;
+            min-width: 220px;
+            padding: 10px 12px;
+        }
+
+        .project-context {
+            display: grid;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding: 22px 24px 24px;
+            border-radius: 22px;
+            background:
+                radial-gradient(circle at top right, rgba(92, 107, 242, 0.18), transparent 36%),
+                linear-gradient(135deg, rgba(10, 18, 52, 0.22), rgba(10, 18, 52, 0.06)),
+                var(--surface);
+            border: 1px solid rgba(129, 140, 248, 0.18);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .project-context[hidden] {
+            display: none;
+        }
+
+        .project-context-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .project-context-copy {
+            display: grid;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .project-context-kicker {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .project-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .project-breadcrumb button,
+        .project-breadcrumb-current {
+            border: 0;
+            padding: 0;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text);
+        }
+
+        .project-breadcrumb button {
+            cursor: pointer;
+            color: var(--muted);
+            transition: color 0.2s ease;
+        }
+
+        .project-breadcrumb button:hover {
+            color: var(--text);
+        }
+
+        .project-breadcrumb-sep {
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .project-current {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .project-current-title {
+            display: grid;
+            gap: 8px;
+        }
+
+        .project-current-title h2 {
+            margin: 0;
+            font-family: 'Fraunces', serif;
+            font-size: clamp(1.3rem, 1.2vw + 1rem, 1.95rem);
+            letter-spacing: -0.02em;
+        }
+
+        .project-summary {
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 70ch;
+        }
+
+        .project-kind-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(92, 107, 242, 0.16);
+            border: 1px solid rgba(129, 140, 248, 0.24);
+            color: var(--text);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .project-context-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .project-action-btn {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .project-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .project-action-btn--primary {
+            background: linear-gradient(135deg, rgba(92, 107, 242, 0.9), rgba(129, 140, 248, 0.8));
+            color: white;
+            border-color: transparent;
+        }
+
+        .project-action-btn--danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ff8d8d;
+        }
+
+        .project-context-grid {
+            display: grid;
+            grid-template-columns: minmax(280px, 0.94fr) minmax(0, 1.4fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .project-panel {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(10, 18, 52, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="light"] .project-panel {
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .project-panel-header {
+            display: grid;
+            gap: 4px;
+        }
+
+        .project-panel-header h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .project-panel-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+
+        .project-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .project-metric-card {
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: grid;
+            gap: 4px;
+        }
+
+        [data-theme="light"] .project-metric-card {
+            background: rgba(92, 107, 242, 0.08);
+        }
+
+        .project-metric-card strong {
+            font-size: 1.35rem;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        .project-metric-card span {
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .project-form-panel {
+            display: grid;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px dashed rgba(129, 140, 248, 0.34);
+        }
+
+        .project-form-panel[hidden] {
+            display: none;
+        }
+
+        .project-form-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .project-form-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .project-form-field--full {
+            grid-column: 1 / -1;
+        }
+
+        .project-form-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .project-form-panel textarea,
+        .project-form-panel input[type="text"],
+        .project-form-panel select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .project-form-panel textarea {
+            min-height: 118px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .project-form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .project-form-btn {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .project-form-btn--primary {
+            background: linear-gradient(135deg, rgba(92, 107, 242, 0.95), rgba(129, 140, 248, 0.82));
+            border-color: transparent;
+            color: white;
+        }
+
+        .project-form-footnote {
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .project-jump-links {
+            display: grid;
+            gap: 10px;
+        }
+
+        .project-tree-node {
+            display: grid;
+            gap: 10px;
+        }
+
+        .project-tree-children {
+            display: grid;
+            gap: 10px;
+            margin-left: 20px;
+            padding-left: 20px;
+            border-left: 2px solid rgba(129, 140, 248, 0.2);
+        }
+
+        .project-tree-item {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            text-align: left;
+            color: var(--text);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            position: relative;
+        }
+
+        [data-theme="light"] .project-tree-item {
+            background: rgba(92, 107, 242, 0.06);
+        }
+
+        .project-tree-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 24px;
+            width: 14px;
+            height: 2px;
+            background: rgba(129, 140, 248, 0.28);
+        }
+
+        .project-tree-item::after {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 20px;
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            border: 2px solid rgba(129, 140, 248, 0.4);
+            background: var(--surface);
+        }
+
+        .project-tree-item--root::before {
+            display: none;
+        }
+
+        .project-tree-item--root::after {
+            display: none;
+        }
+
+        .project-tree-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+            border-color: rgba(129, 140, 248, 0.28);
+        }
+
+        .project-tree-item--active {
+            background: linear-gradient(135deg, rgba(92, 107, 242, 0.24), rgba(129, 140, 248, 0.08));
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .project-tree-item--active::after {
+            background: rgba(92, 107, 242, 0.9);
+            border-color: rgba(92, 107, 242, 0.9);
+        }
+
+        .project-tree-item--branch {
+            border-color: rgba(14, 165, 233, 0.22);
+        }
+
+        .project-tree-item--folder {
+            background-image: linear-gradient(135deg, rgba(14, 165, 233, 0.08), transparent 48%);
+        }
+
+        .project-tree-kicker {
+            color: var(--muted);
+            font-size: 0.74rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .project-tree-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+
+        .project-tree-meta {
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        .project-nav-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(92, 107, 242, 0.18);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid transparent;
+            transition: transform 0.25s ease, border 0.25s ease;
+            animation: floatIn 0.6s ease both;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .stat-card p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .task-input-container {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top right, rgba(92, 107, 242, 0.18), transparent 35%),
+                linear-gradient(180deg, rgba(12, 18, 48, 0.16), transparent 48%),
+                var(--surface);
+            padding: 26px;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid rgba(129, 140, 248, 0.16);
+        }
+
+        .task-input-container::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), rgba(129, 140, 248, 0.2));
+        }
+
+        .task-composer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .task-composer-copy {
+            display: grid;
+            gap: 8px;
+            max-width: 54ch;
+        }
+
+        .task-composer-kicker {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .task-composer-copy h2 {
+            font-size: 1.28rem;
+            margin: 0;
+        }
+
+        .task-composer-copy p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .task-composer-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .task-composer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(92, 107, 242, 0.12);
+            border: 1px solid rgba(129, 140, 248, 0.18);
+            color: var(--text);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .task-composer-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .task-compose-panel {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(12, 18, 48, 0.18);
+            border: 1px solid var(--border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        [data-theme="light"] .task-compose-panel {
+            background: rgba(255, 255, 255, 0.76);
+        }
+
+        .task-compose-panel-heading {
+            display: grid;
+            gap: 4px;
+        }
+
+        .task-compose-panel-heading h3 {
+            margin: 0;
+            font-size: 0.98rem;
+        }
+
+        .task-compose-panel-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.45;
+        }
+
+        .task-compose-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .task-compose-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .task-compose-field--full {
+            grid-column: 1 / -1;
+        }
+
+        .task-compose-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        input[type="text"],
+        select {
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--surface-2);
+            color: var(--text);
+            transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .task-compose-panel input[type="text"],
+        .task-compose-panel input[type="date"],
+        .task-compose-panel select,
+        .task-compose-panel textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: var(--surface-2);
+            color: var(--text);
+            transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .task-compose-panel textarea {
+            min-height: 210px;
+            resize: vertical;
+            line-height: 1.55;
+        }
+
+        input[type="text"]:focus,
+        select:focus,
+        button:focus-visible {
+            outline: none;
+            border-color: transparent;
+            box-shadow: var(--ring);
+            background: var(--surface);
+        }
+
+        .task-compose-panel input:focus,
+        .task-compose-panel select:focus,
+        .task-compose-panel textarea:focus {
+            outline: none;
+            border-color: rgba(129, 140, 248, 0.65);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.16);
+            background: var(--surface);
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            font-weight: 600;
+            padding: 10px 18px;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--accent), #7c4dff);
+            color: white;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(92, 107, 242, 0.3);
+        }
+
+        .hint {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-width: 56ch;
+        }
+
+        .task-compose-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .notice {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(92, 107, 242, 0.12);
+            color: var(--text);
+            display: none;
+        }
+
+        .notice.is-visible {
+            display: block;
+        }
+
+        .notice.is-error {
+            background: rgba(239, 68, 68, 0.14);
+            color: var(--accent-3);
+        }
+
+        .notice.is-success {
+            background: rgba(32, 178, 108, 0.14);
+            color: var(--success);
+        }
+
+        .toolbar {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 18px;
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--surface) 92%, transparent);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border);
+        }
+
+        .toolbar-filters {
+            min-width: 0;
+        }
+
+        .toolbar-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            align-items: start;
+            min-width: 0;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .filters::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .filters::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 999px;
+        }
+
+        .filter-btn {
+            flex: 0 0 auto;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid transparent;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-btn .count {
+            background: rgba(0, 0, 0, 0.08);
+            color: inherit;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+        }
+
+
+        [data-theme="dark"] .filter-btn .count {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .filter-btn.active,
+        .filter-btn[aria-pressed="true"] {
+            background: var(--accent);
+            color: white;
+        }
+
+        .filter-btn.active .count,
+        .filter-btn[aria-pressed="true"] .count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .toolbar-search {
+            min-width: 0;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .toolbar select {
+            min-width: 170px;
+        }
+
+        .saved-view-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .saved-view-controls select {
+            min-width: 180px;
+        }
+
+        .secondary-btn {
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .secondary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .clear-all {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--accent-3);
+            border: 1px solid transparent;
+        }
+
+        .task-list {
+            list-style: none;
+            display: grid;
+            gap: 12px;
+        }
+
+        .task-item {
+            background: var(--surface);
+            padding: 18px;
+            border-radius: 16px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, border 0.2s ease;
+            animation: fadeSlide 0.4s ease both;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--border);
+        }
+
+        .task-item.completed {
+            opacity: 0.65;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--muted);
+        }
+
+        .task-main {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .task-text {
+            font-size: 1.05rem;
+            word-break: break-word;
+        }
+
+        .task-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .category-badge {
+            background: rgba(92, 107, 242, 0.12);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .project-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(14, 165, 233, 0.12);
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+
+        [data-theme="dark"] .project-chip {
+            color: #8fddff;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid transparent;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .complete-btn {
+            background: rgba(46, 204, 113, 0.15);
+            color: #1f8b4c;
+        }
+
+
+        [data-theme="dark"] .complete-btn {
+            color: #9af0b8;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--accent-3);
+        }
+
+        .edit-btn {
+            background: rgba(245, 158, 11, 0.15);
+            color: #b45309;
+        }
+
+
+        [data-theme="dark"] .edit-btn {
+            color: #ffd18a;
+        }
+
+        .save-btn {
+            background: rgba(92, 107, 242, 0.18);
+            color: var(--accent);
+        }
+
+        .cancel-btn {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--muted);
+        }
+
+        .task-edit {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+            align-items: start;
+            padding: 22px;
+            overflow: hidden;
+            border-color: rgba(129, 140, 248, 0.28);
+            background:
+                radial-gradient(circle at top right, rgba(129, 140, 248, 0.14), transparent 32%),
+                linear-gradient(180deg, rgba(10, 14, 36, 0.12), transparent 45%),
+                var(--surface);
+        }
+
+        .task-edit:hover {
+            transform: none;
+            border-color: rgba(129, 140, 248, 0.34);
+        }
+
+        .task-edit::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), rgba(129, 140, 248, 0.2));
+            opacity: 0.95;
+        }
+
+        .task-edit-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .task-edit-heading {
+            display: grid;
+            gap: 8px;
+        }
+
+        .task-edit-kicker {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .task-edit-title {
+            margin: 0;
+            font-size: 1.18rem;
+            line-height: 1.2;
+        }
+
+        .task-edit-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.84rem;
+            color: var(--muted);
+        }
+
+        .task-edit-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(129, 140, 248, 0.12);
+            border: 1px solid rgba(129, 140, 248, 0.18);
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .task-edit-title-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 220px;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .task-edit-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .task-edit-panel {
+            display: grid;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(12, 18, 48, 0.2);
+            border: 1px solid var(--border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        [data-theme="light"] .task-edit-panel {
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .task-edit-panel-heading {
+            display: grid;
+            gap: 4px;
+        }
+
+        .task-edit-panel-heading h4 {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .task-edit-panel-copy {
+            margin: 0;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .task-edit-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .task-edit-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .task-edit-field--full {
+            grid-column: 1 / -1;
+        }
+
+        .task-edit-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .task-edit-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .task-edit-hint {
+            font-size: 0.83rem;
+            color: var(--muted);
+            max-width: 48ch;
+        }
+
+        .task-edit-actions {
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .task-composer-grid,
+            .task-compose-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .task-edit-title-row,
+            .task-edit-body,
+            .task-edit-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .header {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                justify-content: flex-start;
+            }
+
+            .project-context-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-metrics,
+            .project-form-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .project-context-actions,
+            .project-form-actions {
+                justify-content: flex-start;
+            }
+
+            .project-selector {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .toolbar-body {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar-actions {
+                justify-content: flex-start;
+            }
+
+            .task-item {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding-inline: 14px;
+            }
+
+            .filters {
+                flex-wrap: wrap;
+                overflow: visible;
+                gap: 6px;
+                padding-bottom: 0;
+            }
+
+            .filter-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .search-input {
+                min-width: 100%;
+            }
+
+            .toolbar {
+                padding: 14px;
+            }
+
+            .project-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .project-selector select,
+            .toolbar select,
+            .saved-view-controls select {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .saved-view-controls,
+            .toolbar-actions {
+                width: 100%;
+            }
+
+            .task-input-container {
+                padding: 18px;
+            }
+
+            .task-compose-footer {
+                align-items: stretch;
+            }
+
+            .task-compose-footer .add-btn {
+                width: 100%;
+            }
+
+            .task-edit {
+                padding: 18px;
+            }
+
+            .task-edit-footer {
+                align-items: stretch;
+            }
+
+            .task-edit-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .task-edit .action-btn {
+                flex: 1 1 140px;
+            }
+        }
+    
+        .view-switcher {
+            display: flex;
+            gap: 4px;
+            margin-left: 12px;
+        }
+        .view-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .view-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .view-btn[aria-pressed="true"] {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        /* Agent View styles */
+        .agent-view .agent-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface-2);
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        .agent-tasks-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+        .agent-task-item {
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border);
+        }
+        .agent-task-meta {
+            display: flex;
+            gap: 1rem;
+        }
+        .agent-task-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .agent-action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface-2);
+            color: var(--text);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .agent-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+        }
+        .claim-btn {
+            background: rgba(46, 204, 113, 0.15);
+            color: #1f8b4c;
+        }
+
+        [data-theme="dark"] .claim-btn {
+            color: #9af0b8;
+        }
+        .release-btn {
+            background: rgba(245, 158, 11, 0.15);
+            color: #b45309;
+        }
+
+        [data-theme="dark"] .release-btn {
+            color: #ffd18a;
+        }
+
+        /* Edit form enhancements */
+        .task-edit input[type="text"],
+        .task-edit input[type="date"],
+        .task-edit input[type="number"],
+        .task-edit select,
+        .task-edit textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface-2);
+            color: var(--text);
+            font-size: 0.95rem;
+            margin: 0;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .task-edit textarea {
+            min-height: 220px;
+            resize: vertical;
+            line-height: 1.55;
+        }
+
+        .task-edit input:focus,
+        .task-edit select:focus,
+        .task-edit textarea:focus {
+            outline: none;
+            border-color: rgba(129, 140, 248, 0.65);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.16);
+        }
+
+        .task-edit .task-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .task-edit .action-btn {
+            min-width: 104px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .task-edit .save-btn {
+            background: linear-gradient(135deg, var(--accent), #8d97ff);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 12px 24px rgba(92, 107, 242, 0.22);
+        }
+
+        .task-edit .cancel-btn {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+        }
+
+        /* Priority border colors */
+        .task-item.priority-critical { border-left: 4px solid var(--accent-3); }
+        .task-item.priority-high { border-left: 4px solid var(--accent-2); }
+        .task-item.priority-medium { border-left: 4px solid var(--accent); }
+        .task-item.priority-low { border-left: 4px solid var(--muted); }
+
+        /* Overdue task indicator */
+        .task-item.overdue {
+          box-shadow: inset 0 0 0 1px var(--accent-3);
+        }
+        .task-item.overdue .task-text {
+          color: var(--accent-3);
+        }
+
+        /* Owner quick-assign chip */
+        .owner-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(92, 107, 242, 0.12);
+          color: var(--accent);
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          margin-left: 8px;
+          cursor: pointer;
+          user-select: none;
+        }
+        .owner-chip:hover {
+          background: rgba(92, 107, 242, 0.2);
+        }
+        .owner-chip .remove {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.1);
+          font-size: 10px;
+          line-height: 1;
+        }
+        .owner-chip .remove:hover {
+          background: var(--accent-3);
+          color: white;
+        }
+
+        .model-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(16, 185, 129, 0.16);
+          color: #0f766e;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          margin-left: 8px;
+        }
+
+
+        [data-theme="dark"] .model-chip {
+          color: #8ff5d1;
+        }
+
+        .runtime-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(245, 158, 11, 0.18);
+          color: #b45309;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          margin-left: 8px;
+        }
+
+
+        [data-theme="dark"] .runtime-chip {
+          color: #ffd18a;
+        }
+
+        /* Saved View Chip */
+        .saved-view-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(245, 158, 11, 0.15);
+          color: #b45309;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        [data-theme="dark"] .saved-view-chip {
+          color: #ffd18a;
+        }
+        .saved-view-chip:hover {
+          background: rgba(245, 158, 11, 0.25);
+        }
+        .saved-view-chip .remove {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.1);
+          font-size: 10px;
+          line-height: 1;
+        }
+        .saved-view-chip .remove:hover {
+          background: var(--accent-3);
+          color: white;
+        }
+
+        /* Owner dropdown menu */
+        .owner-dropdown {
+          position: absolute;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          box-shadow: var(--shadow);
+          padding: 4px;
+          z-index: 100;
+          max-height: 200px;
+          overflow-y: auto;
+          min-width: 120px;
+        }
+        .owner-dropdown button {
+          display: block;
+          width: 100%;
+          text-align: left;
+          padding: 6px 10px;
+          background: none;
+          border: none;
+          color: var(--text);
+          font-size: 0.85rem;
+          cursor: pointer;
+          border-radius: 4px;
+        }
+        .owner-dropdown button:hover {
+          background: var(--surface-2);
+        }
+
+        /* Undo Snackbar */
+        .snackbar {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: var(--text);
+          color: var(--surface);
+          padding: 12px 16px;
+          border-radius: 999px;
+          box-shadow: var(--shadow);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          z-index: 1000;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          pointer-events: none;
+        }
+        .snackbar.visible {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        .snackbar-undo {
+          background: var(--accent);
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 999px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .snackbar-undo:hover {
+          opacity: 0.9;
+        }
+        .error-banner {
+          background: #fff3f3;
+          border-left: 4px solid #e53935;
+          padding: 15px 20px;
+          margin-bottom: 20px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .error-banner h2 {
+          margin: 0;
+          font-size: 16px;
+          color: #c62828;
+          flex-shrink: 0;
+        }
+        .error-banner p {
+          margin: 0;
+          color: #666;
+          flex-grow: 1;
+        }
+        .error-banner .btn {
+          background: #e53935;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 600;
+          flex-shrink: 0;
+        }
+        .error-banner .btn-secondary {
+          background: transparent;
+          color: #c62828;
+          border: 1px solid #e53935;
+        }
+        /* Keyboard Help Modal */
+        #helpModal {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        #helpModal[hidden] {
+          display: none;
+        }
+        .help-modal-content {
+          background: var(--surface);
+          border-radius: 16px;
+          padding: 24px;
+          max-width: 90%;
+          width: 500px;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--border);
+          position: relative;
+        }
+        .help-close {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          background: transparent;
+          border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+          color: var(--muted);
+          line-height: 1;
+        }
+        .help-shortcuts {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 12px;
+        }
+        .help-shortcuts th,
+        .help-shortcuts td {
+          text-align: left;
+          padding: 8px;
+          border-bottom: 1px solid var(--border);
+        }
+        .help-shortcuts th:first-child {
+          width: 40%;
+        }
+        .help-shortcuts kbd {
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          padding: 2px 6px;
+          font-family: monospace;
+          font-size: 0.9em;
+        }
+
+        /* Performance Panel */
+        #perfPanel {
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          width: 320px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          box-shadow: var(--shadow);
+          z-index: 1000;
+          padding: 16px;
+          font-family: monospace;
+          font-size: 0.85rem;
+          display: block;
+        }
+        #perfPanel[hidden] {
+          display: none;
+        }
+        .perf-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+          border-bottom: 1px solid var(--border);
+          padding-bottom: 8px;
+        }
+        .perf-header button {
+          background: transparent;
+          border: none;
+          font-size: 1.2rem;
+          cursor: pointer;
+          color: var(--muted);
+          line-height: 1;
+        }
+        .perf-metrics {
+          max-height: 200px;
+          overflow-y: auto;
+          font-size: 0.8rem;
+        }
+        .perf-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 12px;
+        }
+        .perf-table th,
+        .perf-table td {
+          text-align: left;
+          padding: 4px 8px;
+          border-bottom: 1px solid var(--border);
+        }
+        .perf-table th {
+          font-weight: 600;
+          background: var(--surface-2);
+        }
+        .perf-recommendations {
+          font-size: 0.75rem;
+          color: var(--muted);
+        }
+        .perf-recommendations ul {
+          margin: 4px 0 0 16px;
+          padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#taskList">Skip to task list</a>
+    <div class="container">
+        <div class="header">
+            <div class="title-block">
+                <h1>Project Dashboard</h1>
+                <p>Track deliverables, keep momentum, and celebrate progress.</p>
+                <nav class="page-nav" aria-label="Dashboard pages">
+                    <a href="/" aria-current="page">Tasks</a>
+                    <a href="/agents">Agents</a>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+                    <span id="themeIcon" aria-hidden="true">🌙</span>
+                    <span id="themeLabel">Dark mode</span>
+                </button>
+                <div class="project-selector" id="projectSelectorContainer">
+                    <label for="projectSelect">Project:</label>
+                    <select id="projectSelect">
+                        <option value="">Loading projects...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <section class="project-context" id="projectContext" hidden>
+            <div class="project-context-topbar">
+                <div class="project-context-copy">
+                    <span class="project-context-kicker">Project workspace</span>
+                    <div class="project-breadcrumb" id="projectBreadcrumb" aria-live="polite"></div>
+                    <div class="project-current">
+                        <div class="project-current-title">
+                            <h2 id="projectCurrentName">Project</h2>
+                            <p class="project-summary" id="projectSummary"></p>
+                        </div>
+                        <span class="project-kind-badge" id="projectKindBadge">Project</span>
+                    </div>
+                </div>
+                <div class="project-context-actions" aria-label="Project actions">
+                    <button class="project-action-btn project-action-btn--primary" id="projectAddRootBtn" type="button">New root</button>
+                    <button class="project-action-btn" id="projectAddChildBtn" type="button">Add child</button>
+                    <button class="project-action-btn" id="projectEditBtn" type="button">Edit</button>
+                    <button class="project-action-btn project-action-btn--danger" id="projectArchiveBtn" type="button">Archive</button>
+                </div>
+            </div>
+            <div class="project-context-grid">
+                <div class="project-panel">
+                    <div class="project-panel-header">
+                        <h3>Project snapshot</h3>
+                        <p>See the current board at a glance, then edit or reorganize it without leaving the dashboard.</p>
+                    </div>
+                    <div class="project-metrics" id="projectMetrics" aria-live="polite"></div>
+                    <form class="project-form-panel" id="projectFormPanel" hidden>
+                        <div class="project-panel-header">
+                            <h3 id="projectFormTitle">Edit project</h3>
+                            <p id="projectFormSubtitle">Change the board name, description, or where it lives in the project tree.</p>
+                        </div>
+                        <input type="hidden" id="projectFormMode" value="">
+                        <input type="hidden" id="projectFormProjectId" value="">
+                        <div class="project-form-fields">
+                            <div class="project-form-field project-form-field--full">
+                                <label class="project-form-label" for="projectNameInput">Project name</label>
+                                <input type="text" id="projectNameInput" placeholder="OpenClaw System" required>
+                            </div>
+                            <div class="project-form-field">
+                                <label class="project-form-label" for="projectParentSelect">Parent project</label>
+                                <select id="projectParentSelect">
+                                    <option value="">No parent (root project)</option>
+                                </select>
+                            </div>
+                            <div class="project-form-field">
+                                <label class="project-form-label" for="projectStatusInput">Status</label>
+                                <select id="projectStatusInput">
+                                    <option value="active">Active</option>
+                                    <option value="paused">Paused</option>
+                                </select>
+                            </div>
+                            <div class="project-form-field project-form-field--full">
+                                <label class="project-form-label" for="projectDescriptionInput">Description</label>
+                                <textarea id="projectDescriptionInput" placeholder="Explain what this board is for and how it fits into the wider OpenClaw system."></textarea>
+                            </div>
+                        </div>
+                        <p class="project-form-footnote">Projects become folder-style containers automatically when they have child boards. Archiving a folder archives its visible child project tree too.</p>
+                        <div class="project-form-actions">
+                            <button class="project-form-btn" id="projectCancelBtn" type="button">Cancel</button>
+                            <button class="project-form-btn project-form-btn--primary" id="projectSaveBtn" type="submit">Save project</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="project-panel">
+                    <div class="project-panel-header">
+                        <h3>Boards in this space</h3>
+                        <p id="projectNavigatorSummary">Jump across parent, sibling, and child boards from the current project tree.</p>
+                    </div>
+                    <div class="project-jump-links" id="projectJumpLinks" aria-label="Related projects"></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="errorBanner" class="error-banner" role="alert" aria-live="assertive" style="display:none;">
+          <h2>🚨 Sync Error</h2>
+          <p id="errorBannerMessage"></p>
+          <div style="display:flex; gap:8px;">
+            <button class="btn" id="errorRetryBtn">Retry All</button>
+            <button class="btn btn-secondary" id="errorDismissBtn">Dismiss</button>
+          </div>
+        </div>
+
+        <div class="stats" aria-live="polite">
+            <div class="stat-card">
+                <h3 id="totalTasks">0</h3>
+                <p>Total Tasks</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="completedTasks">0</h3>
+                <p>Completed</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingTasks">0</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="archivedTasks">0</h3>
+                <p>Archived</p>
+            </div>
+        </div>
+
+        <div class="task-input-container">
+            <div class="task-composer-header">
+                <div class="task-composer-copy">
+                    <span class="task-composer-kicker">Task composer</span>
+                    <h2>Compose OpenClaw-ready work</h2>
+                    <p>Create richer tasks with routing, scheduling, and execution hints so agents know who should own the work and which model should tackle it.</p>
+                </div>
+                <div class="task-composer-pills" aria-hidden="true">
+                    <span class="task-composer-pill">Agent assignment</span>
+                    <span class="task-composer-pill">Model preference</span>
+                    <span class="task-composer-pill">Recurring support</span>
+                </div>
+            </div>
+            <div class="task-composer-grid">
+                <section class="task-compose-panel">
+                    <div class="task-compose-panel-heading">
+                        <h3>Task brief</h3>
+                        <p>Describe the work clearly so the assigned OpenClaw agent can execute without guessing.</p>
+                    </div>
+                    <div class="task-compose-fields">
+                        <div class="task-compose-field task-compose-field--full">
+                            <label class="task-compose-label" for="taskInput">Task name</label>
+                            <input type="text" id="taskInput" placeholder="Enter a new task..." aria-describedby="taskHint">
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="categoryInput">Category</label>
+                            <input type="text" id="categoryInput" list="categoryOptions" placeholder="Category">
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskStatusInput">Status</label>
+                            <select id="taskStatusInput">
+                                <option value="backlog">Backlog</option>
+                                <option value="ready">Ready</option>
+                                <option value="in_progress">In progress</option>
+                                <option value="review">Review</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field task-compose-field--full">
+                            <label class="task-compose-label" for="taskDescriptionInput">Description</label>
+                            <textarea id="taskDescriptionInput" placeholder="Add context, constraints, success criteria, or prompts for the assigned agent."></textarea>
+                        </div>
+                    </div>
+                </section>
+                <section class="task-compose-panel">
+                    <div class="task-compose-panel-heading">
+                        <h3>Execution routing</h3>
+                        <p>Choose which agent should own the task, which model it should prefer, and when the work should happen.</p>
+                    </div>
+                    <div class="task-compose-fields">
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskOwnerInput">Assigned agent</label>
+                            <select id="taskOwnerInput">
+                                <option value="">Unassigned</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskModelInput">LLM model</label>
+                            <select id="taskModelInput">
+                                <option value="">Loading models...</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskPriorityInput">Priority</label>
+                            <select id="taskPriorityInput">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskRecurrenceInput">Recurrence</label>
+                            <select id="taskRecurrenceInput">
+                                <option value="none" selected>None</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskStartDateInput">Start date</label>
+                            <input type="date" id="taskStartDateInput">
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskDueDateInput">Due date</label>
+                            <input type="date" id="taskDueDateInput">
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <datalist id="categoryOptions"></datalist>
+            <div class="task-compose-footer">
+                <p class="hint" id="taskHint">Press Enter in the task name field for a quick create, or use the routing controls to hand the task to an OpenClaw agent with a preferred model.</p>
+                <button class="add-btn" id="addTaskBtn" type="button">Create Task</button>
+            </div>
+            <div class="notice" id="notice" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="toolbar" aria-label="Task controls">
+            <div class="toolbar-filters">
+                <div class="filters" role="tablist" aria-label="Task status filters">
+                    <button class="filter-btn" data-filter="all" type="button" aria-pressed="false">
+                        All <span class="count" id="filterAllCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="pending" type="button" aria-pressed="false">
+                        Pending <span class="count" id="filterPendingCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="completed" type="button" aria-pressed="false">
+                        Completed <span class="count" id="filterCompletedCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="archived" type="button" aria-pressed="false">
+                        Archived <span class="count" id="filterArchivedCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="my_tasks" type="button" aria-pressed="false">
+                        My tasks <span class="count" id="filterMyTasksCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="overdue" type="button" aria-pressed="false">
+                        Overdue <span class="count" id="filterOverdueCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="blocked" type="button" aria-pressed="false">
+                        Blocked <span class="count" id="filterBlockedCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="no_due_date" type="button" aria-pressed="false">
+                        No due date <span class="count" id="filterNoDueDateCount">0</span>
+                    </button>
+                </div>
+            </div>
+            <div class="toolbar-body">
+                <div class="toolbar-search">
+                    <label class="sr-only" for="searchInput">Search tasks</label>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search tasks or categories">
+                </div>
+                <div class="toolbar-actions">
+                    <label class="sr-only" for="categoryFilter">Filter by category</label>
+                    <select id="categoryFilter">
+                        <option value="all">All categories</option>
+                    </select>
+                    <div class="view-switcher" role="tablist" aria-label="View mode">
+                        <button class="view-btn" data-view="list" type="button" title="List view" aria-label="List view" aria-pressed="true">📋</button>
+                        <button class="view-btn" data-view="board" type="button" title="Board view" aria-label="Board view" aria-pressed="false">📌</button>
+                        <button class="view-btn" data-view="timeline" type="button" title="Timeline view" aria-label="Timeline view" aria-pressed="false">📅</button>
+                        <button class="view-btn" data-view="agent" type="button" title="Agent view" aria-label="Agent view" aria-pressed="false">🤖</button>
+                        <button class="view-btn" data-view="service-requests" type="button" title="Service requests" aria-label="Service requests" aria-pressed="false">🧾</button>
+                        <button class="view-btn" data-view="departments" type="button" title="Departments" aria-label="Departments" aria-pressed="false">🏢</button>
+                        <button class="view-btn" data-view="publish" type="button" title="Publish center" aria-label="Publish center" aria-pressed="false">📤</button>
+                        <button class="view-btn" data-view="artifacts" type="button" title="Artifacts" aria-label="Artifacts" aria-pressed="false">📦</button>
+                        <button class="view-btn" data-view="approvals" type="button" title="Approvals" aria-label="Approvals" aria-pressed="false">✅</button>
+                        <button class="view-btn" data-view="dependencies" type="button" title="Cross-board dependencies" aria-label="Cross-board dependencies" aria-pressed="false">🔗</button>
+                        <button class="view-btn" data-view="health" type="button" title="Service health" aria-label="Service health" aria-pressed="false">❤️</button>
+                        <button class="view-btn" data-view="metrics" type="button" title="Metrics dashboard" aria-label="Metrics dashboard" aria-pressed="false">📊</button>
+                        <button class="view-btn" data-view="runbooks" type="button" title="Runbooks" aria-label="Runbooks" aria-pressed="false">📖</button>
+                        <button class="view-btn" data-view="memory" type="button" title="Group memory summary" aria-label="Memory summary" aria-pressed="false">📚</button>
+                        <button class="view-btn" data-view="handoffs" type="button" title="Lead handoffs" aria-label="Lead handoffs" aria-pressed="false">🤝</button>
+                        <button class="view-btn" data-view="audit" type="button" title="Audit view" aria-label="Audit view" aria-pressed="false">🔍</button>
+                        <button class="view-btn" data-view="cron" type="button" title="Cron view" aria-label="Cron view" aria-pressed="false">⏱️</button>
+                    </div>
+                    <label class="sr-only" for="sortSelect">Sort tasks</label>
+                    <select id="sortSelect">
+                        <option value="newest">Newest first</option>
+                        <option value="oldest">Oldest first</option>
+                        <option value="updated">Recently updated</option>
+                        <option value="alpha">Alphabetical</option>
+                    </select>
+                    <button class="secondary-btn" id="exportJsonBtn" type="button">Export JSON</button>
+                    <button class="secondary-btn" id="exportCsvBtn" type="button">Export CSV</button>
+                    <button class="secondary-btn" id="importBtn" type="button">Import</button>
+                    <input type="file" id="importFile" accept=".json,.csv,application/json,text/csv" hidden>
+                    <button class="clear-all" id="clearCompletedBtn" type="button">Archive completed</button>
+                    <div class="saved-view-controls">
+                      <button class="secondary-btn" id="saveViewBtn" type="button" title="Save current filters as a view">💾 Save view</button>
+                      <select id="savedViewSelect">
+                        <option value="">Load view...</option>
+                      </select>
+                      <button class="secondary-btn" id="deleteViewBtn" type="button" title="Delete selected view">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="task-list" id="taskList" aria-live="polite"></ul>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p id="emptyMessage">No tasks yet. Add one above!</p>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help Modal -->
+    <div id="helpModal" class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle" hidden>
+      <div class="help-modal-content">
+        <button class="help-close" id="helpClose" aria-label="Close help">&times;</button>
+        <h2 id="helpModalTitle">Keyboard Shortcuts</h2>
+        <table class="help-shortcuts">
+          <thead><tr><th>Key</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>?</kbd></td><td>Show/hide this help</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Close modal / panels</td></tr>
+            <tr><td><kbd>1</kbd></td><td>Switch to List view</td></tr>
+            <tr><td><kbd>2</kbd></td><td>Switch to Board view</td></tr>
+            <tr><td><kbd>3</kbd></td><td>Switch to Timeline view</td></tr>
+            <tr><td><kbd>4</kbd></td><td>Switch to Agent view</td></tr>
+            <tr><td><kbd>5</kbd></td><td>Switch to Audit view</td></tr>
+            <tr><td><kbd>6</kbd></td><td>Switch to Cron view</td></tr>
+            <tr><td><kbd>a</kbd></td><td>Filter: All</td></tr>
+            <tr><td><kbd>p</kbd></td><td>Filter: Pending</td></tr>
+            <tr><td><kbd>c</kbd></td><td>Filter: Completed</td></tr>
+            <tr><td><kbd>m</kbd></td><td>Filter: My tasks</td></tr>
+            <tr><td><kbd>o</kbd></td><td>Filter: Overdue</td></tr>
+            <tr><td><kbd>b</kbd></td><td>Filter: Blocked</td></tr>
+            <tr><td><kbd>n</kbd></td><td>Filter: No due date</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></td><td>Show performance panel</td></tr>
+            <tr><td><kbd>Enter</kbd></td><td>Add task (when input focused)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Performance Monitor Panel -->
+    <div id="perfPanel" class="perf-panel" hidden aria-label="Performance monitor">
+      <div class="perf-header">
+        <strong>Performance</strong>
+        <button id="perfClose" aria-label="Close performance panel">&times;</button>
+      </div>
+      <div id="perfMetrics" class="perf-metrics">
+        <p>No metrics yet.</p>
+      </div>
+    </div>
+    <script type="module" src="./src/dashboard-integration-optimized.mjs"></script>
+    <div class="snackbar" id="snackbar" role="alert" aria-live="polite">
+      <span id="snackbarMessage"></span>
+      <button class="snackbar-undo" id="snackbarUndo">Undo</button>
+    </div>
+</body>
+</html>
