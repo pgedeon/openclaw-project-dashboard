@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills &amp; Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/dashboard-shared.css">
+    <style>
+        /* Page-specific styles for Skills & Tools */
+
+        .search-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+        }
+
+        .search-section .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .search-section label {
+            display: grid;
+            gap: 6px;
+            min-width: 180px;
+            flex: 1 1 200px;
+        }
+
+        .search-section label span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        /* Summary cards */
+        .summary-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .summary-card {
+            background: var(--bg-2);
+            border-radius: 10px;
+            padding: 12px 14px;
+            min-width: 160px;
+        }
+
+        .summary-card .value {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .summary-card .label {
+            font-size: 0.82em;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        .summary-card .detail {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="page-header">
+            <div class="title-block">
+                <span class="page-kicker">Operations Catalog</span>
+                <h1>Skills &amp; Tools</h1>
+                <p>Inspect installed skills, agent tool access, and capability coverage without digging through the task dashboard shell.</p>
+                <nav class="page-nav" aria-label="Dashboard pages">
+                    <a href="/">Tasks</a>
+                    <a href="/agents">Agents</a>
+                    <a href="/skills-tools" aria-current="page">Skills &amp; Tools</a>
+                    <a href="/operations">Operations</a>
+                    <a href="/workflows">Workflows</a>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <span class="theme-toggle-icon">🌙</span>
+                    <span class="theme-toggle-label">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="notice" id="notice" role="alert" aria-live="assertive"></div>
+        <main id="skillsToolsRoot" aria-live="polite"></main>
+    </div>
+
+    <script src="/src/scripts/theme-manager.js"></script>
+    <script>
+        if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations()
+                .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+                .then(() => ('caches' in window
+                    ? caches.keys().then((keys) => Promise.all(
+                        keys
+                            .filter((key) => key.startsWith('openclaw-dashboard-'))
+                            .map((key) => caches.delete(key))
+                    ))
+                    : Promise.resolve()))
+                .catch((error) => console.warn('[Skills & Tools] Failed to clear local service workers:', error));
+        }
+    </script>
+    <script type="module" src="/src/skills-tools-page.mjs"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+node_modules/
+dist/
+playwright-report/
+test-results/
+coverage/
+server.log
+test-output.log
+task-server.pid
+*.pid
+*.log
+.env
+.env.local
+.DS_Store
+
+# Working files (not for release)
+*.backup
+*.bak
+*.broken
+state.json
+memory/
+archive/
+tasks.md

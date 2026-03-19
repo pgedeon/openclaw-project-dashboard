@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks - Project Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/dashboard-shared.css">
+    <style>
+        /* Page-specific styles for Tasks Dashboard */
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid transparent;
+            transition: transform 0.25s ease, border 0.25s ease;
+            animation: floatIn 0.6s ease both;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .stat-card p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        /* Task composer */
+        .task-input-container {
+            position: relative;
+            overflow: hidden;
+            background: var(--surface);
+            padding: 26px;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .task-input-container::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), rgba(129, 140, 248, 0.2));
+        }
+
+        .task-composer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .task-composer-copy {
+            display: grid;
+            gap: 8px;
+            max-width: 54ch;
+        }
+
+        .task-composer-kicker {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .task-composer-copy h2 {
+            font-size: 1.28rem;
+            margin: 0;
+        }
+
+        .task-composer-copy p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .task-composer-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .task-composer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(92, 107, 242, 0.12);
+            border: 1px solid rgba(129, 140, 248, 0.18);
+            color: var(--text);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .task-composer-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .task-compose-panel {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 18px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+        }
+
+        .task-compose-panel-heading {
+            display: grid;
+            gap: 4px;
+        }
+
+        .task-compose-panel-heading h3 {
+            margin: 0;
+            font-size: 0.98rem;
+        }
+
+        .task-compose-panel-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.45;
+        }
+
+        .task-compose-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .task-compose-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .task-compose-field--full {
+            grid-column: 1 / -1;
+        }
+
+        .task-compose-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .task-compose-panel input[type="text"],
+        .task-compose-panel input[type="date"],
+        .task-compose-panel select,
+        .task-compose-panel textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: var(--surface);
+            color: var(--text);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .task-compose-panel textarea {
+            min-height: 210px;
+            resize: vertical;
+            line-height: 1.55;
+        }
+
+        .task-compose-panel input:focus,
+        .task-compose-panel select:focus,
+        .task-compose-panel textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: var(--ring);
+        }
+
+        .task-compose-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--accent), #7c4dff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(92, 107, 242, 0.3);
+        }
+
+        .hint {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-width: 56ch;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 18px;
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border);
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-btn {
+            flex: 0 0 auto;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid transparent;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn .count {
+            background: rgba(0, 0, 0, 0.08);
+            color: inherit;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+        }
+
+        [data-theme="dark"] .filter-btn .count {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .filter-btn.active,
+        .filter-btn[aria-pressed="true"] {
+            background: var(--accent);
+            color: white;
+        }
+
+        .filter-btn.active .count,
+        .filter-btn[aria-pressed="true"] .count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .toolbar-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .toolbar-search input {
+            width: 100%;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .toolbar select {
+            min-width: 170px;
+        }
+
+        .clear-all {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--accent-3);
+            border: 1px solid transparent;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Task list */
+        .task-list {
+            list-style: none;
+            display: grid;
+            gap: 12px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .task-item {
+            background: var(--surface);
+            padding: 18px;
+            border-radius: 16px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid transparent;
+            transition: transform 0.2s ease, border 0.2s ease;
+            animation: fadeSlide 0.4s ease both;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--border);
+        }
+
+        .task-item.completed {
+            opacity: 0.65;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--muted);
+        }
+
+        .task-main {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .task-text {
+            font-size: 1.05rem;
+            word-break: break-word;
+        }
+
+        .task-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .category-badge {
+            background: rgba(92, 107, 242, 0.12);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .project-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(14, 165, 233, 0.12);
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        [data-theme="dark"] .project-chip {
+            color: #8fddff;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .complete-btn {
+            background: rgba(46, 204, 113, 0.15);
+            color: #1f8b4c;
+        }
+
+        [data-theme="dark"] .complete-btn {
+            color: #9af0b8;
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--accent-3);
+        }
+
+        .edit-btn {
+            background: rgba(245, 158, 11, 0.15);
+            color: #b45309;
+        }
+
+        [data-theme="dark"] .edit-btn {
+            color: #ffd18a;
+        }
+
+        .save-btn {
+            background: rgba(92, 107, 242, 0.18);
+            color: var(--accent);
+        }
+
+        .cancel-btn {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--muted);
+        }
+
+        /* Priority borders */
+        .task-item.priority-critical { border-left: 4px solid var(--accent-3); }
+        .task-item.priority-high { border-left: 4px solid var(--accent-2); }
+        .task-item.priority-medium { border-left: 4px solid var(--accent); }
+        .task-item.priority-low { border-left: 4px solid var(--muted); }
+
+        .task-item.overdue {
+            box-shadow: inset 0 0 0 1px var(--accent-3);
+        }
+
+        .task-item.overdue .task-text {
+            color: var(--accent-3);
+        }
+
+        /* Task edit form */
+        .task-edit {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+            align-items: start;
+            padding: 22px;
+            overflow: hidden;
+            border-color: rgba(129, 140, 248, 0.28);
+            background: var(--surface);
+        }
+
+        .task-edit::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), rgba(129, 140, 248, 0.2));
+            opacity: 0.95;
+        }
+
+        /* Owner chips */
+        .owner-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(92, 107, 242, 0.12);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .owner-chip:hover {
+            background: rgba(92, 107, 242, 0.2);
+        }
+
+        .model-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.16);
+            color: #0f766e;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        [data-theme="dark"] .model-chip {
+            color: #8ff5d1;
+        }
+
+        .runtime-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245, 158, 11, 0.18);
+            color: #b45309;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        [data-theme="dark"] .runtime-chip {
+            color: #ffd18a;
+        }
+
+        /* View switcher */
+        .view-switcher {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            width: 100%;
+            margin: 0;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--surface);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .view-group {
+            display: grid;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .view-group-title {
+            margin: 0;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .view-group-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                display: grid;
+                gap: 8px;
+        }
+
+        .view-btn {
+            min-height: 48px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-2);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.88rem;
+            display: grid;
+            gap: 4px;
+            align-content: center;
+            justify-items: start;
+            text-align: left;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .view-btn-label {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .view-btn-caption {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.2;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .view-btn[aria-pressed="true"] {
+            background: linear-gradient(135deg, rgba(92, 107, 242, 0.18), rgba(129, 140, 248, 0.08));
+            border-color: var(--accent);
+        }
+
+        .view-btn[aria-pressed="true"] .view-btn-label {
+            color: var(--accent);
+        }
+
+        /* Project context */
+        .project-context {
+            display: grid;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding: 22px 24px 24px;
+            border-radius: 22px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .project-context[hidden] {
+            display: none;
+        }
+
+        .project-context-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .project-context-copy {
+            display: grid;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .project-context-kicker {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .project-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .project-breadcrumb button,
+        .project-breadcrumb-current {
+            border: 0;
+            padding: 0;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text);
+        }
+
+        .project-breadcrumb button {
+            cursor: pointer;
+            color: var(--muted);
+        }
+
+        .project-breadcrumb-sep {
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .project-current {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .project-current-title {
+            display: grid;
+            gap: 8px;
+        }
+
+        .project-current-title h2 {
+            margin: 0;
+            font-family: 'Fraunces', serif;
+            font-size: clamp(1.3rem, 1.2vw + 1rem, 1.95rem);
+        }
+
+        .project-summary {
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 70ch;
+        }
+
+        .project-kind-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(92, 107, 242, 0.16);
+            border: 1px solid rgba(129, 140, 248, 0.24);
+            color: var(--text);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .project-context-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .project-action-btn {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .project-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .project-context-grid {
+            display: grid;
+            grid-template-columns: minmax(280px, 0.94fr) minmax(0, 1.4fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .project-panel {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 18px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+        }
+
+        .project-panel-header h3 {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+        }
+
+        .project-panel-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .project-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .project-metric-card {
+            padding: 14px;
+            border-radius: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: grid;
+            gap: 4px;
+        }
+
+        .project-metric-card strong {
+            font-size: 1.35rem;
+            color: var(--accent);
+        }
+
+        .project-metric-card span {
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .project-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: min(100%, 520px);
+        }
+
+        .project-selector label {
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        .project-selector select {
+            flex: 1 1 320px;
+            min-width: 220px;
+        }
+
+        /* Snackbar */
+        .snackbar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: var(--surface);
+            padding: 12px 16px;
+            border-radius: 999px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .snackbar.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .snackbar-undo {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Error banner */
+        .error-banner {
+            background: rgba(239, 68, 68, 0.12);
+            border-left: 4px solid var(--accent-3);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .error-banner h2 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--accent-3);
+            flex-shrink: 0;
+        }
+
+        .error-banner p {
+            margin: 0;
+            color: var(--muted);
+            flex-grow: 1;
+        }
+
+        /* Help modal */
+        #helpModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        #helpModal[hidden] {
+            display: none;
+        }
+
+        .help-modal-content {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90%;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .help-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--muted);
+            line-height: 1;
+        }
+
+        .help-shortcuts {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .help-shortcuts th,
+        .help-shortcuts td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .help-shortcuts kbd {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        /* Performance panel */
+        #perfPanel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 320px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        #perfPanel[hidden] {
+            display: none;
+        }
+
+        .perf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .perf-header button {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--muted);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* Screen reader only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .task-composer-grid,
+            .task-compose-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .header {
+                grid-template-columns: 1fr;
+            }
+
+            .header-actions {
+                justify-content: flex-start;
+            }
+
+            .project-context-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-metrics,
+            .project-form-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .project-selector {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .task-item {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Project Tree Navigation Styles */
+        .project-tree-node {
+            margin-bottom: 0;
+        }
+
+        .project-tree-item {
+            width: 100%;
+            display: grid;
+            gap: 6px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .project-tree-item:hover {
+            border-color: rgba(92, 107, 242, 0.28);
+            box-shadow: var(--shadow-soft);
+            transform: translateY(-1px);
+        }
+
+        .project-tree-item:focus-visible {
+            outline: none;
+            box-shadow: var(--ring);
+        }
+
+        .project-tree-item--root {
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(92, 107, 242, 0.06) 100%);
+            border-color: rgba(92, 107, 242, 0.22);
+            padding: 16px 18px;
+        }
+
+        .project-tree-item--root:hover {
+            border-color: rgba(92, 107, 242, 0.4);
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(92, 107, 242, 0.1) 100%);
+        }
+
+        .project-tree-item--active {
+            border-color: var(--accent);
+            background: rgba(92, 107, 242, 0.08);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        .project-tree-item--branch {
+            border-color: rgba(92, 107, 242, 0.2);
+        }
+
+        .project-tree-item--folder {
+            border-left: 3px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .project-tree-kicker {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            opacity: 0.8;
+        }
+
+        .project-tree-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .project-tree-title span {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .project-nav-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: rgba(92, 107, 242, 0.14);
+            color: var(--accent);
+            border: 1px solid rgba(92, 107, 242, 0.2);
+        }
+
+        .project-tree-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .project-tree-children {
+            margin-left: 18px;
+            padding-left: 16px;
+            border-left: 2px solid rgba(92, 107, 242, 0.16);
+            margin-top: 6px;
+        }
+
+        .project-tree-children .project-tree-item {
+            font-size: 0.92rem;
+        }
+
+        @media (max-width: 720px) {
+            .project-tree-children {
+                margin-left: 10px;
+                padding-left: 10px;
+            }
+
+            .project-tree-item {
+                padding: 12px 14px;
+            }
+
+            .project-tree-title span {
+                font-size: 0.88rem;
+            }
+        }
+
+        /* Project Form Panel Styles */
+        .project-form-panel {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .project-form-panel[hidden] {
+            display: none;
+        }
+
+        .project-form {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 28px 32px 24px;
+            max-width: 90%;
+            width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .project-form-header {
+            margin-bottom: 24px;
+        }
+
+        .project-form-header h3 {
+            margin: 0 0 8px;
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+        }
+
+        .project-form-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .project-form-body {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .project-form-field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .project-form-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .project-form-field input,
+        .project-form-field textarea,
+        .project-form-field select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .project-form-field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .project-form-field input:focus,
+        .project-form-field textarea:focus,
+        .project-form-field select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: var(--ring);
+        }
+
+        .project-form-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 720px) {
+            .project-form {
+                width: 100%;
+                max-width: none;
+                padding: 24px 20px 20px;
+            }
+
+            .project-form-footer {
+                flex-direction: column-reverse;
+            }
+
+            .project-form-footer button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#taskList">Skip to task list</a>
+    <div class="container">
+        <div class="header">
+            <div class="title-block">
+                <span class="page-kicker">Work Tracker</span>
+                <h1>Tasks</h1>
+                <p>Track deliverables, keep momentum, and celebrate progress.</p>
+                <nav class="page-nav" aria-label="Dashboard pages">
+                    <a href="/" aria-current="page">Tasks</a>
+                    <a href="/agents">Agents</a>
+                    <a href="/skills-tools">Skills &amp; Tools</a>
+                    <a href="/operations">Operations</a>
+                    <a href="/workflows">Workflows</a>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">
+                    <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+                    <span class="theme-toggle-label" id="themeLabel">Dark</span>
+                </button>
+                <div class="project-selector" id="projectSelectorContainer">
+                    <label for="projectSelect">Project:</label>
+                    <select id="projectSelect">
+                        <option value="">Loading projects...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <section class="project-context" id="projectContext" hidden>
+            <div class="project-context-topbar">
+                <div class="project-context-copy">
+                    <span class="project-context-kicker">Project workspace</span>
+                    <div class="project-breadcrumb" id="projectBreadcrumb" aria-live="polite"></div>
+                    <div class="project-current">
+                        <div class="project-current-title">
+                            <h2 id="projectCurrentName">Project</h2>
+                            <p class="project-summary" id="projectSummary"></p>
+                        </div>
+                        <span class="project-kind-badge" id="projectKindBadge">Project</span>
+                    </div>
+                </div>
+                <div class="project-context-actions" aria-label="Project actions">
+                    <button class="project-action-btn" id="projectAddRootBtn" type="button">New root</button>
+                    <button class="project-action-btn" id="projectAddChildBtn" type="button">Add child</button>
+                    <button class="project-action-btn" id="projectEditBtn" type="button">Edit</button>
+                    <button class="project-action-btn" id="projectArchiveBtn" type="button">Archive</button>
+                </div>
+            </div>
+            <div class="project-context-grid">
+                <div class="project-panel">
+                    <div class="project-panel-header">
+                        <h3>Project snapshot</h3>
+                        <p>See the current board at a glance.</p>
+                    </div>
+                    <div class="project-metrics" id="projectMetrics" aria-live="polite"></div>
+                </div>
+                <div class="project-panel">
+                    <div class="project-panel-header">
+                        <h3>Boards in this space</h3>
+                        <p id="projectNavigatorSummary">Jump across related boards.</p>
+                    </div>
+                    <div id="projectJumpLinks" aria-label="Related projects"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="view-switcher" aria-label="Dashboard workspaces">
+            <div class="view-group">
+                <p class="view-group-title">Work</p>
+                <div class="view-group-buttons">
+                    <button class="view-btn" type="button" data-view="list" aria-pressed="true">
+                        <span class="view-btn-label">Task List</span>
+                        <span class="view-btn-caption">Backlog, ready work, and delivery tracking.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="board" aria-pressed="false">
+                        <span class="view-btn-label">Board</span>
+                        <span class="view-btn-caption">Kanban lanes for the active project.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="timeline" aria-pressed="false">
+                        <span class="view-btn-label">Timeline</span>
+                        <span class="view-btn-caption">Date-driven sequencing across tasks.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="agent" aria-pressed="false">
+                        <span class="view-btn-label">Agents</span>
+                        <span class="view-btn-caption">Queues, ownership, and live execution.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="service-requests" aria-pressed="false">
+                        <span class="view-btn-label">Requests</span>
+                        <span class="view-btn-caption">Intake, routing, and workflow launch.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="publish" aria-pressed="false">
+                        <span class="view-btn-label">Publish</span>
+                        <span class="view-btn-caption">Content production and release status.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="approvals" aria-pressed="false">
+                        <span class="view-btn-label">Approvals</span>
+                        <span class="view-btn-caption">Pending decisions and escalations.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="artifacts" aria-pressed="false">
+                        <span class="view-btn-label">Artifacts</span>
+                        <span class="view-btn-caption">Run outputs, evidence, and deliverables.</span>
+                    </button>
+                </div>
+            </div>
+            <div class="view-group">
+                <p class="view-group-title">Operations</p>
+                <div class="view-group-buttons">
+                    <button class="view-btn" type="button" data-view="dependencies" aria-pressed="false">
+                        <span class="view-btn-label">Dependencies</span>
+                        <span class="view-btn-caption">Cross-board blockers and upstream risk.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="health" aria-pressed="false">
+                        <span class="view-btn-label">Health</span>
+                        <span class="view-btn-caption">System checks and operator heartbeat.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="metrics" aria-pressed="false">
+                        <span class="view-btn-label">Metrics</span>
+                        <span class="view-btn-caption">Scorecards for org, teams, and services.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="runbooks" aria-pressed="false">
+                        <span class="view-btn-label">Runbooks</span>
+                        <span class="view-btn-caption">Operational procedures and references.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="memory" aria-pressed="false">
+                        <span class="view-btn-label">Memory</span>
+                        <span class="view-btn-caption">Project memory summary and continuity.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="handoffs" aria-pressed="false">
+                        <span class="view-btn-label">Handoffs</span>
+                        <span class="view-btn-caption">Lead transitions and pending follow-up.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="audit" aria-pressed="false">
+                        <span class="view-btn-label">Audit</span>
+                        <span class="view-btn-caption">Recent change log and governance trail.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="cron" aria-pressed="false">
+                        <span class="view-btn-label">Cron</span>
+                        <span class="view-btn-caption">Scheduled automation jobs and runs.</span>
+                    </button>
+                </div>
+            </div>
+            <div class="view-group">
+                <p class="view-group-title">Admin</p>
+                <div class="view-group-buttons">
+                    <button class="view-btn" type="button" data-view="departments" aria-pressed="false">
+                        <span class="view-btn-label">Departments</span>
+                        <span class="view-btn-caption">Org queues, leads, and work allocation.</span>
+                    </button>
+                    <button class="view-btn" type="button" data-view="skills-tools" aria-pressed="false">
+                        <span class="view-btn-label">Skills &amp; Tools</span>
+                        <span class="view-btn-caption">Capability inventory and tool access.</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+                <!-- Project Form Panel -->
+        <div id="projectFormPanel" class="project-form-panel" hidden>
+            <form id="projectForm" class="project-form">
+                <input type="hidden" id="projectFormMode" name="mode">
+                <input type="hidden" id="projectFormProjectId" name="projectId">
+                
+                <div class="project-form-header">
+                    <h3 id="projectFormTitle">Create project</h3>
+                    <p id="projectFormSubtitle">Add a new board or folder.</p>
+                </div>
+
+                <div class="project-form-body">
+                    <div class="project-form-field">
+                        <label for="projectNameInput">Project name *</label>
+                        <input type="text" id="projectNameInput" name="name" required placeholder="Enter project name...">
+                    </div>
+
+                    <div class="project-form-field">
+                        <label for="projectDescriptionInput">Description</label>
+                        <textarea id="projectDescriptionInput" name="description" rows="3" placeholder="Optional description..."></textarea>
+                    </div>
+
+                    <div class="project-form-field">
+                        <label for="projectParentSelect">Parent project</label>
+                        <select id="projectParentSelect" name="parent_id">
+                            <option value="">No parent (root level)</option>
+                        </select>
+                    </div>
+
+                    <div class="project-form-field">
+                        <label for="projectStatusInput">Status</label>
+                        <select id="projectStatusInput" name="status">
+                            <option value="active">Active</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="project-form-footer">
+                    <button type="button" class="secondary-btn" id="projectCancelBtn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="projectSaveBtn">Save project</button>
+                </div>
+            </form>
+        </div>
+
+<div id="errorBanner" class="error-banner" role="alert" aria-live="assertive">
+          <h2>Sync Error</h2>
+          <p id="errorBannerMessage"></p>
+          <div style="display:flex; gap:8px;">
+            <button class="action-btn" id="errorRetryBtn">Retry</button>
+            <button class="action-btn" id="errorDismissBtn">Dismiss</button>
+          </div>
+        </div>
+
+        <div id="taskWorkbench">
+        <div class="stats" aria-live="polite">
+            <div class="stat-card">
+                <h3 id="totalTasks">0</h3>
+                <p>Total Tasks</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="completedTasks">0</h3>
+                <p>Completed</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pendingTasks">0</h3>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="archivedTasks">0</h3>
+                <p>Archived</p>
+            </div>
+        </div>
+
+        <div class="task-input-container">
+            <div class="task-composer-header">
+                <div class="task-composer-copy">
+                    <span class="task-composer-kicker">Task composer</span>
+                    <h2>Compose OpenClaw-ready work</h2>
+                    <p>Create richer tasks with routing, scheduling, and execution hints so agents know who should own the work.</p>
+                </div>
+            </div>
+            <div class="task-composer-grid">
+                <section class="task-compose-panel">
+                    <div class="task-compose-panel-heading">
+                        <h3>Task brief</h3>
+                        <p>Describe the work clearly.</p>
+                    </div>
+                    <div class="task-compose-fields">
+                        <div class="task-compose-field task-compose-field--full">
+                            <label class="task-compose-label" for="taskInput">Task name</label>
+                            <input type="text" id="taskInput" placeholder="Enter a new task...">
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="categoryInput">Category</label>
+                            <input type="text" id="categoryInput" list="categoryOptions" placeholder="Category">
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskStatusInput">Status</label>
+                            <select id="taskStatusInput">
+                                <option value="backlog">Backlog</option>
+                                <option value="ready">Ready</option>
+                                <option value="in_progress">In progress</option>
+                                <option value="review">Review</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field task-compose-field--full">
+                            <label class="task-compose-label" for="taskDescriptionInput">Description</label>
+                            <textarea id="taskDescriptionInput" placeholder="Add context, constraints, success criteria..."></textarea>
+                        </div>
+                    </div>
+                </section>
+                <section class="task-compose-panel">
+                    <div class="task-compose-panel-heading">
+                        <h3>Execution routing</h3>
+                        <p>Choose agent, model, and timing.</p>
+                    </div>
+                    <div class="task-compose-fields">
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskOwnerInput">Assigned agent</label>
+                            <select id="taskOwnerInput">
+                                <option value="">Unassigned</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskModelInput">LLM model</label>
+                            <select id="taskModelInput">
+                                <option value="">Loading models...</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskPriorityInput">Priority</label>
+                            <select id="taskPriorityInput">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskRecurrenceInput">Recurrence</label>
+                            <select id="taskRecurrenceInput">
+                                <option value="none" selected>None</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskStartDateInput">Start date</label>
+                            <input type="date" id="taskStartDateInput">
+                        </div>
+                        <div class="task-compose-field">
+                            <label class="task-compose-label" for="taskDueDateInput">Due date</label>
+                            <input type="date" id="taskDueDateInput">
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <datalist id="categoryOptions"></datalist>
+            <div class="task-compose-footer">
+                <p class="hint">Press Enter in the task name field for a quick create.</p>
+                <button class="add-btn" id="addTaskBtn" type="button">Create Task</button>
+            </div>
+            <div class="notice" id="notice" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="toolbar" aria-label="Task controls">
+            <div class="filters" role="tablist" aria-label="Task status filters">
+                <button class="filter-btn" data-filter="all" type="button" aria-pressed="false">
+                    All <span class="count" id="filterAllCount">0</span>
+                </button>
+                <button class="filter-btn" data-filter="pending" type="button" aria-pressed="false">
+                    Pending <span class="count" id="filterPendingCount">0</span>
+                </button>
+                <button class="filter-btn" data-filter="completed" type="button" aria-pressed="false">
+                    Completed <span class="count" id="filterCompletedCount">0</span>
+                </button>
+                <button class="filter-btn" data-filter="archived" type="button" aria-pressed="false">
+                    Archived <span class="count" id="filterArchivedCount">0</span>
+                </button>
+                <button class="filter-btn" data-filter="my_tasks" type="button" aria-pressed="false">
+                    My tasks <span class="count" id="filterMyTasksCount">0</span>
+                </button>
+                <button class="filter-btn" data-filter="overdue" type="button" aria-pressed="false">
+                    Overdue <span class="count" id="filterOverdueCount">0</span>
+                </button>
+                <button class="filter-btn" data-filter="blocked" type="button" aria-pressed="false">
+                    Blocked <span class="count" id="filterBlockedCount">0</span>
+                </button>
+            </div>
+            <div class="toolbar-body">
+                <div class="toolbar-search">
+                    <label class="sr-only" for="searchInput">Search tasks</label>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search tasks or categories">
+                </div>
+                <div class="toolbar-actions">
+                    <label class="sr-only" for="categoryFilter">Filter by category</label>
+                    <select id="categoryFilter">
+                        <option value="all">All categories</option>
+                    </select>
+                    <select id="sortSelect">
+                        <option value="newest">Newest first</option>
+                        <option value="oldest">Oldest first</option>
+                        <option value="updated">Recently updated</option>
+                        <option value="alpha">Alphabetical</option>
+                    </select>
+                    <button class="secondary-btn" id="exportJsonBtn" type="button">Export JSON</button>
+                    <button class="secondary-btn" id="exportCsvBtn" type="button">Export CSV</button>
+                    <button class="secondary-btn" id="importBtn" type="button">Import</button>
+                    <input type="file" id="importFile" accept=".json,.csv" hidden>
+                    <button class="clear-all" id="clearCompletedBtn" type="button">Archive completed</button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <ul class="task-list" id="taskList" aria-live="polite"></ul>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p id="emptyMessage">No tasks yet. Add one above!</p>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle" hidden>
+      <div class="help-modal-content">
+        <button class="help-close" id="helpClose" aria-label="Close help">&times;</button>
+        <h2 id="helpModalTitle">Keyboard Shortcuts</h2>
+        <table class="help-shortcuts">
+          <thead><tr><th>Key</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>?</kbd></td><td>Show/hide this help</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Close modal</td></tr>
+            <tr><td><kbd>a</kbd></td><td>Filter: All</td></tr>
+            <tr><td><kbd>p</kbd></td><td>Filter: Pending</td></tr>
+            <tr><td><kbd>c</kbd></td><td>Filter: Completed</td></tr>
+            <tr><td><kbd>Enter</kbd></td><td>Add task (when input focused)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Performance Panel -->
+    <div id="perfPanel" hidden aria-label="Performance monitor">
+      <div class="perf-header">
+        <strong>Performance</strong>
+        <button id="perfClose" aria-label="Close">&times;</button>
+      </div>
+      <div id="perfMetrics"></div>
+    </div>
+
+    <script src="/src/scripts/theme-manager.js"></script>
+    <script>
+        if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations()
+                .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+                .then(() => ('caches' in window
+                    ? caches.keys().then((keys) => Promise.all(
+                        keys.filter((key) => key.startsWith('openclaw-dashboard-')).map((key) => caches.delete(key))
+                    ))
+                    : Promise.resolve()))
+                .catch((error) => console.warn('[Dashboard] Failed to clear local service workers:', error));
+        }
+    </script>
+    <script type="module" src="./src/dashboard-integration-optimized.mjs"></script>
+    <div class="snackbar" id="snackbar" role="alert" aria-live="polite">
+      <span id="snackbarMessage"></span>
+      <button class="snackbar-undo" id="snackbarUndo">Undo</button>
+    </div>
+</body>
+</html>
