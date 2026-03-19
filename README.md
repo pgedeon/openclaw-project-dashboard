@@ -18,17 +18,37 @@ Operations-first project dashboard for OpenClaw. Hierarchical boards, agent-awar
   <img src="docs/screenshots/agents-overview-dark-full.png" alt="Dark-mode full-page desktop overview of the OpenClaw agents workspace" width="100%" />
 </p>
 
+### Operations
+
+<p align="center">
+  <img src="docs/screenshots/operations-overview-dark-full.png" alt="Dark-mode full-page desktop overview of the Operations view" width="100%" />
+</p>
+
+### Workflows
+
+<p align="center">
+  <img src="docs/screenshots/workflows-overview-dark-full.png" alt="Dark-mode full-page desktop overview of the Workflows management page" width="100%" />
+</p>
+
+### Skills & Tools
+
+<p align="center">
+  <img src="docs/screenshots/skills-tools-overview-dark-full.png" alt="Dark-mode full-page desktop overview of the Skills & Tools reference page" width="100%" />
+</p>
+
 ## Features
 
 - **Project hierarchy** — Folder-style parent/child boards with project context manager
 - **Kanban boards** — Drag-and-drop columns with configurable workflows
 - **Rich task composer** — Agent assignment, preferred LLM model, priority, recurrence, start/due dates
 - **Agent workspace** — Dedicated `/agents` page with live status, queue presence, and per-agent detail rail
+- **Workflows engine** — Custom state machines per project (Kanban, content pipeline, bug triage)
+- **Operations view** — Runbook templates, department metrics, and operational followup
+- **Skills & tools** — Reference page for agent skills, tools, and capabilities
 - **OpenClaw bridge** — Endpoints for agents to watch for runnable work and report status back
 - **Audit trail** — Full change history with actor, action, and before/after diffs
 - **Filtering & views** — List, board, timeline, and cron views with toolbar filters
 - **Offline support** — Service worker + IndexedDB for offline task access
-- **Workflows engine** — Custom state machines per project (Kanban, content pipeline, bug triage)
 
 ## Install
 
@@ -76,6 +96,9 @@ The dashboard is a Node.js + PostgreSQL stack with a vanilla JS frontend (no fra
 - **Storage layer**: `storage/asana.js`
 - **Frontend entry**: `dashboard.html`
 - **Agents page**: `agents.html`
+- **Operations page**: `operations.html`
+- **Workflows page**: `workflows.html`
+- **Skills & tools page**: `skills-tools.html`
 - **Frontend modules**: `src/dashboard-integration-optimized.mjs` + lazy-loaded views
 - **Service worker**: `sw.js`
 
