@@ -2,6 +2,8 @@
 
 `2.0.0-rc.2`
 
+Project has moved into https://github.com/pgedeon/openclaw-project-webos
+
 Operations-first project dashboard for OpenClaw. Hierarchical boards, agent-aware task composition, agent queue visibility, audit trails, and a thin bridge back into the OpenClaw runtime — not just a passive UI.
 
 ## Screenshots
